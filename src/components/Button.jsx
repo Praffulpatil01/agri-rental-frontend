@@ -1,6 +1,7 @@
-export default function Button({ label, onClick, type = "primary", disabled = false }) {
-  const base =
-    "w-full py-3 rounded-lg text-lg font-semibold active:scale-95 transition";
+export default function Button({ label, onClick, type = "primary", disabled = false, fullWidth = true, className = "" }) {
+  const base = fullWidth
+    ? "w-full py-3 rounded-lg text-lg font-semibold active:scale-95 transition"
+    : "inline-flex items-center py-2 px-3 rounded-lg text-sm font-semibold active:scale-95 transition";
 
   const styles = {
     primary: "bg-green-600 text-white hover:bg-green-700 active:bg-green-800",
@@ -11,7 +12,7 @@ export default function Button({ label, onClick, type = "primary", disabled = fa
   const disabledClass = disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : "";
 
   return (
-    <button onClick={onClick} className={`${base} ${styles[type]} ${disabledClass}`} disabled={disabled}>
+    <button type="button" onClick={onClick} className={`${base} ${styles[type]} ${disabledClass} ${className}`} disabled={disabled}>
       {label}
     </button>
   );

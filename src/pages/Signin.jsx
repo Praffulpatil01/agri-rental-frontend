@@ -5,7 +5,6 @@ import Input from "../components/Input";
 import Button from "../components/Button";
 import { signup } from "../api/authApi";
 
-
 export default function Signin() {
   const [phone, setPhone] = useState("");
   const [step, setStep] = useState("enterPhone");
@@ -13,6 +12,9 @@ export default function Signin() {
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [message, setMessage] = useState(null);
+  const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState(""); // Farmer | Operator
+
 
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -37,24 +39,63 @@ export default function Signin() {
   };
 
   const verifyOtp = async () => {
+    debugger
     if (otp.trim().length === 0) {
       setMessage({ type: "error", text: "Enter the OTP" });
       return;
     }
+    if (!fullName.trim()) {
+      setMessage({ type: "error", text: "Enter full name" });
+      return;
+    }
+
+    if (!role) {
+      setMessage({ type: "error", text: "Select a role" });
+      return;
+    }
     setVerifying(true);
     setMessage({ type: "info", text: "Verifying..." });
-    setTimeout(() => {
-      setVerifying(false);
-      if (otp.trim() === "1234") {
-        // Mock login
-        login({ phone, role: "Farmer" });
-        setMessage({ type: "success", text: "Signed in" });
-        navigate("/role");
+
+    try {
+      // 🔴 Real signup API call
+      const res = await signup({
+        fullName: fullName,
+        phoneNumber: phone,
+        role: role
+      });
+
+      console.log(res); // ✅ FIXED
+
+      if (res.statusCode === 201) {
+
+        // login(res.data);
+
+        setMessage({ type: "success", text: res.statusMessage });
+
+        if (res.data.role === "Farmer") {
+          navigate("/farmer");
+        } else if (res.data.role === "Operator") {
+          navigate("/operator");
+        } else {
+          navigate("/");
+        }
+
       } else {
-        setMessage({ type: "error", text: "Invalid OTP" });
+        setMessage({
+          type: "error",
+          text: res.statusMessage
+        });
       }
-    }, 700);
-  };
+
+    } catch (err) {
+      setMessage({
+        type: "error",
+        text: err.response?.data?.statusMessage || "Signup failed"
+      });
+    } finally {
+      setVerifying(false);
+    }
+  }
 
   const resendOtp = () => {
     setOtp("");
@@ -114,7 +155,35 @@ export default function Signin() {
               inputMode="numeric"
               maxLength={6}
             />
+            <Input
+              placeholder="Full Name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
 
+            <div className="grid grid-cols-2 gap-3 mt-3 mb-2">
+              <button
+                type="button"
+                onClick={() => setRole("Farmer")}
+                className={`py-3 rounded-lg border text-sm font-semibold ${role === "Farmer"
+                    ? "bg-green-600 text-white border-green-600"
+                    : "bg-white text-gray-700"
+                  }`}
+              >
+                Farmer
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setRole("Operator")}
+                className={`py-3 rounded-lg border text-sm font-semibold ${role === "Operator"
+                    ? "bg-green-600 text-white border-green-600"
+                    : "bg-white text-gray-700"
+                  }`}
+              >
+                Operator
+              </button>
+            </div>
             <Button label={verifying ? "Verifying..." : "Verify OTP"} onClick={verifyOtp} disabled={verifying} />
 
             <div className="flex items-center justify-between mt-4">

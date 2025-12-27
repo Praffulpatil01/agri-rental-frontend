@@ -4,24 +4,36 @@ import { useAuth } from "../context/AuthContext";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { FiPhone } from "react-icons/fi";
+import { login as loginApi } from "../api/authApi";
+
 
 export default function Login() {
   const [phone, setPhone] = useState("");
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { loginUser } = useAuth();
 
-  const handleLogin = () => {
-    if (!phone) return;
-    const mockUser = { phone, role: "Farmer" };
-    login(mockUser);
-    navigate("/role");
-  };
+  const handleLogin = async () => {
+  if (!phone) return;
+
+  try {
+    const res = await loginApi({ phoneNumber: phone });
+    loginUser(res.data);
+    if (res.data.role === "Farmer") {
+          navigate("/farmer");
+        } else if (res.data.role === "Operator") {
+          navigate("/operator");
+        } else {
+          navigate("/");
+        }
+  } catch (err) {
+    alert(err.response?.data?.message || "Login failed");
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-green-50 px-4">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-lg border border-green-100 p-6">
-        
-        {/* App / Brand */}
+      
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-green-700">
             Agri Rental
@@ -31,7 +43,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Login Title */}
         <h2 className="text-lg font-semibold text-gray-800 mb-2">
           Login
         </h2>
@@ -39,7 +50,6 @@ export default function Login() {
           Enter your mobile number to continue
         </p>
 
-        {/* Phone Input */}
         <Input
           type="tel"
           inputMode="numeric"
@@ -49,15 +59,12 @@ export default function Login() {
           onChange={(e) => setPhone(e.target.value)}
         />
 
-        {/* Login Button */}
         <Button
           label="Continue"
           onClick={handleLogin}
           disabled={!phone}
           type={phone ? "primary" : "secondary"}
         />
-
-        {/* Quick sign-in link with icon + tooltip */}
         <div className="mt-3 text-center">
           <Link
             to="/signin"

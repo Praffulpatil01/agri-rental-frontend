@@ -1,29 +1,3 @@
-// import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import Login from "../pages/Login";
-// import SelectRole from "../pages/SelectRole";
-// import FarmerDashboard from "../pages/FarmerDashboard";
-// import CreateBooking from "../pages/CreateBooking";
-// import OperatorDashboard from "../pages/OperatorDashboard";
-// import JobTracking from "../pages/JobTracking";
-// import Signin from "../pages/Signin";
-
-// export default function AppRoutes() {
-//   return (
-//     <BrowserRouter>
-//       <Routes>
-//         <Route path="/" element={<Login />} />
-//         <Route path="/signin" element={<Signin />} />
-//         <Route path="/role" element={<SelectRole />} />
-//         <Route path="/farmer" element={<FarmerDashboard />} />
-//         <Route path="/create-booking" element={<CreateBooking />} />
-//         <Route path="/operator" element={<OperatorDashboard />} />
-//         <Route path="/job" element={<JobTracking />} />
-//       </Routes>
-//     </BrowserRouter>
-//   );
-// }
-
-
 import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -33,9 +7,10 @@ import FarmerDashboard from "../pages/FarmerDashboard";
 import OperatorDashboard from "../pages/OperatorDashboard";
 import CreateBooking from "../pages/CreateBooking";
 import JobTracking from "../pages/JobTracking";
+import FarmerBookings from "../pages/FarmerBookings";
+import FarmerPaymentConfirm from "../pages/FarmerPaymentConfirm";
 
 export default function AppRoutes() {
-  debugger;
   return (
     <Routes>
       {/* Public routes */}
@@ -76,6 +51,30 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute roles={["Operator"]}>
             <JobTracking />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/create-booking"
+        element={
+          <ProtectedRoute roles={["Farmer"]}>
+            <CreateBooking />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farmer/bookings"
+        element={
+          <ProtectedRoute roles={["Farmer"]}>
+            <FarmerBookings />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farmer/payment"
+        element={
+          <ProtectedRoute roles={["Farmer"]}>
+            <FarmerPaymentConfirm />
           </ProtectedRoute>
         }
       />

@@ -9,6 +9,7 @@ import CreateBooking from "../pages/CreateBooking";
 import JobTracking from "../pages/JobTracking";
 import FarmerBookings from "../pages/FarmerBookings";
 import FarmerPaymentConfirm from "../pages/FarmerPaymentConfirm";
+import AdminDashboard from "../pages/AdminDashboard";
 
 export default function AppRoutes() {
   return (
@@ -16,6 +17,7 @@ export default function AppRoutes() {
       {/* Public routes */}
       <Route path="/" element={<Login />} />
       <Route path="/signin" element={<Signin />} />
+      <Route path="/admin" element={<AdminDashboard />} />
 
       {/* Farmer-only routes */}
       <Route

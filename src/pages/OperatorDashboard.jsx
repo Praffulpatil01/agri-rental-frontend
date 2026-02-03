@@ -1,44 +1,52 @@
 import Button from "../components/Button";
 import { useState, useMemo, useRef, useEffect } from "react";
-import { FiPhone, FiDollarSign, FiClock } from "react-icons/fi";
+import { FiPhone, FiClock, FiMapPin, FiUser } from "react-icons/fi";
+import { FaRupeeSign, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
 import AppHeader from "../components/AppHeader";
 import { getOperatorDashboard } from "../api/operatorApi.js";
 import { operatorAction } from "../api/bookingApi";
+import { trackJob } from "../api/JobApi";
+import { getCurrentLocation } from "../utils/geolocation";
+
 
 function StatusBadge({ status }) {
   const map = {
-    pending: "bg-yellow-100 text-yellow-800",
-    assigned: "bg-blue-100 text-blue-800",
-    in_progress: "bg-green-100 text-green-800",
-    completed: "bg-gray-100 text-gray-700",
-    rejected: "bg-red-100 text-red-700",
+    pending: "bg-amber-50 text-amber-700 border-amber-200",
+    assigned: "bg-blue-50 text-blue-700 border-blue-200",
+    in_progress: "bg-purple-50 text-purple-700 border-purple-200",
+    completed: "bg-gray-50 text-gray-700 border-gray-200",
+    rejected: "bg-red-50 text-red-700 border-red-200",
   };
+
   return (
-    <span className={`px-2 py-1 rounded text-xs font-medium ${map[status]}`}>
-      {status.replace(/_/g, " ")}
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${map[status]}`}>
+      {status.replace(/_/g, " ").toUpperCase()}
     </span>
   );
 }
 
 function PaymentBadge({ status }) {
-  debugger
+  const isPaid = status === 'paid';
   return (
     <span
-      className={`px-2 py-1 rounded text-xs font-semibold ${
-        status === "paid"
-          ? "bg-green-100 text-green-700"
-          : "bg-orange-100 text-orange-700"
-      }`}
+      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider gap-1 ${isPaid
+        ? "bg-green-100 text-green-800"
+        : "bg-orange-100 text-orange-800"
+        }`}
     >
-      {status === "paid" ? "Paid" : "Pending"}
+      {isPaid ? <FaCheckCircle className="text-[10px]" /> : <FaExclamationCircle className="text-[10px]" />}
+      {isPaid ? "Paid" : "Pending"}
     </span>
   );
 }
+
+import { useToast } from "../context/ToastContext";
 
 export default function OperatorDashboard() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
+  const toast = useToast();
 
   useEffect(() => {
     if (fetchedRef.current) return;
@@ -47,7 +55,6 @@ export default function OperatorDashboard() {
     getOperatorDashboard()
       .then(res => {
         if (res.data.statusCode === 200) {
-          debugger;
           const mapped = res.data.data.map(j => ({
             ...j,
             price: Number(j.amount ?? 0),
@@ -56,7 +63,7 @@ export default function OperatorDashboard() {
           setJobs(mapped);
         }
       })
-      .catch(() => alert("Unauthorized or error loading dashboard"))
+      .catch(() => toast.error("Unauthorized or error loading dashboard"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -78,315 +85,210 @@ export default function OperatorDashboard() {
 
   const handleAction = async (job, action) => {
     try {
-      debugger;
       const res = await operatorAction({ bookingRef: job.bookingRef, action: action });
       console.log("Action response:", res);
       if (res.statusCode === 200) {
+        toast.success(`Job ${action === "accept" ? "Accepted" : "Rejected"}`);
         setJobs(prev =>
           prev.map(j =>
             j.bookingId === job.bookingId
+              // Note: The API logic in original code mapped 'accept' -> 'assigned'
               ? { ...j, status: action === "accept" ? "assigned" : "rejected" }
               : j
           )
         );
       } else {
-        alert(res.statusMessage);
+        toast.error(res.statusMessage);
       }
     } catch {
-      alert("Action failed");
+      toast.error("Action failed");
     }
   };
 
+  const handleStartJob = async (job) => {
+    try {
+      const loc = await getCurrentLocation();
+
+      await trackJob({
+        bookingId: job.bookingId,
+        bookingRef: job.bookingRef,
+        action: "start",
+        latitude: loc.latitude,
+        longitude: loc.longitude
+      });
+
+      toast.success("Job Started! Location tracked.");
+
+      setJobs(prev =>
+        prev.map(j =>
+          j.bookingId === job.bookingId
+            ? { ...j, status: "in_progress" }
+            : j
+        )
+      );
+    } catch {
+      toast.error("Unable to start job (location required)");
+    }
+  };
+
+  const handleFinishJob = async (job) => {
+    try {
+      const loc = await getCurrentLocation();
+
+      await trackJob({
+        bookingRef: job.bookingRef,
+        bookingId: job.bookingId,
+        action: "finish",
+        latitude: loc.latitude,
+        longitude: loc.longitude
+      });
+
+      toast.success("Job Completed! Earnings updated.");
+
+      setJobs(prev =>
+        prev.map(j =>
+          j.bookingRef === job.bookingRef
+            ? { ...j, status: "completed" }
+            : j
+        )
+      );
+    } catch {
+      toast.error("Unable to finish job (location required)");
+    }
+  };
+
+
   return (
-    <div className="p-4 max-w-3xl mx-auto space-y-4">
-      <AppHeader title="Operator Dashboard" />
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <div className="max-w-3xl mx-auto p-4 space-y-6">
+        <AppHeader title="Operator Dashboard" />
 
-      {/* EARNINGS */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-green-50 border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-green-700">
-            <FiDollarSign />
-            <span className="text-sm">Total Earned</span>
+        {/* EARNINGS STATS */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-5 text-white shadow-lg shadow-green-200">
+            <div className="flex items-center gap-2 text-green-100 mb-1">
+              <FaRupeeSign className="opacity-80" />
+              <span className="text-xs font-semibold uppercase tracking-wider">Earned</span>
+            </div>
+            <div className="text-3xl font-bold">₹{totalEarnings}</div>
           </div>
-          <div className="text-2xl font-bold">₹{totalEarnings}</div>
+
+          <div className="bg-white border boundary-gray-100 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center gap-2 text-orange-600 mb-1">
+              <FiClock />
+              <span className="text-xs font-semibold uppercase tracking-wider opacity-80">Pending</span>
+            </div>
+            <div className="text-3xl font-bold text-gray-900">₹{pendingAmount}</div>
+          </div>
         </div>
 
-        <div className="bg-orange-50 border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-orange-700">
-            <FiClock />
-            <span className="text-sm">Pending</span>
+        {loading && (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
           </div>
-          <div className="text-2xl font-bold">₹{pendingAmount}</div>
-        </div>
-      </div>
+        )}
 
-      {loading && <p className="text-center text-gray-500">Loading jobs...</p>}
+        {/* JOB LIST */}
+        <div className="space-y-4">
+          {jobs.map(job => (
+            <div key={job.bookingId} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
 
-      {/* JOB LIST */}
-      <div className="space-y-4">
-        {jobs.map(job => (
-          <div key={job.bookingId} className="bg-white border rounded-lg p-4 shadow-sm">
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="font-semibold">{job.bookingRef}</h2>
-                  <StatusBadge status={job.status} />
-                  {job.status === "completed" && (
-                    <PaymentBadge status={job.paymentStatus} />
-                  )}
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-mono text-xs text-gray-400">#{job.bookingRef}</span>
+                    <StatusBadge status={job.status} />
+                  </div>
+                  <h2 className="font-bold text-lg text-gray-900">{job.area}</h2>
                 </div>
+                {job.status === "completed" && (
+                  <PaymentBadge status={job.paymentStatus} />
+                )}
+              </div>
 
-                <div className="text-sm text-gray-600 mt-1">
-                  Farmer: {job.farmerName} • {job.area}
+              <div className="bg-gray-50 rounded-xl p-4 mb-5 space-y-3">
+                <div className="flex items-start gap-3">
+                  <FiUser className="mt-1 text-gray-400 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{job.farmerName}</p>
+                    <a href={`tel:${job.farmerPhone}`} className="text-xs text-green-600 hover:underline">
+                      {job.farmerPhone}
+                    </a>
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  Location: {job.location}
+                <div className="flex items-start gap-3">
+                  <FiMapPin className="mt-1 text-gray-400 shrink-0" />
+                  <p className="text-sm text-gray-600">{job.location}</p>
+                </div>
+                <div className="flex items-center gap-3 pt-2 border-t border-gray-200 mt-2">
+                  <div className="text-sm text-gray-500">Job Value:</div>
+                  <div className="font-bold text-gray-900 flex items-center">
+                    <FaRupeeSign className="text-xs mr-0.5" />
+                    {job.amount}
+                  </div>
                 </div>
               </div>
 
-              <div className="text-right">
-                <a
-                  href={`tel:${job.farmerPhone}`}
-                  className="text-green-600 text-sm flex items-center gap-1"
-                >
-                  <FiPhone /> Call
-                </a>
-                <div className="font-semibold mt-1">₹{job.amount} </div>
+              {/* ACTION BUTTONS */}
+              <div className="flex gap-3">
+                {job.status === "pending" && (
+                  <>
+                    <div className="flex-1">
+                      <Button
+                        label="Accept Job"
+                        onClick={() => handleAction(job, "accept")}
+                        fullWidth
+                      />
+                    </div>
+
+                    <div className="flex-1">
+                      <Button
+                        label="Reject"
+                        type="secondary" // Assuming Button component has a secondary or danger type, defaulting to safe
+                        onClick={() => handleAction(job, "reject")}
+                        fullWidth
+                        className="!bg-red-50 !text-red-600 hover:!bg-red-100"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {job.status === "assigned" && (
+                  <div className="w-full">
+                    <Button
+                      label="Start Job"
+                      onClick={() => handleStartJob(job)}
+                      fullWidth
+                    />
+                  </div>
+                )}
+
+                {job.status === "in_progress" && (
+                  <div className="w-full">
+                    <Button
+                      label="Finish Job"
+                      onClick={() => handleFinishJob(job)}
+                      fullWidth
+                      className="!bg-amber-500 hover:!bg-amber-600 !text-white"
+                    />
+                  </div>
+                )}
               </div>
             </div>
+          ))}
+        </div>
 
-            {/* ACTION BUTTONS */}
-            <div className="mt-3 flex gap-2">
-              {job.status === "pending" && (
-                <>
-                  <Button
-                    label="Accept"
-                    onClick={() => handleAction(job, "accept")}
-                  />
-                  <Button
-                    label="Reject"
-                    type="secondary"
-                    onClick={() => handleAction(job, "reject")}
-                  />
-                </>
-              )}
-
-              {job.status === "assigned" && (
-                <Button
-                  label="Reject"
-                  type="secondary"
-                  onClick={() => handleAction(job, "reject")}
-                />
-              )}
+        {!loading && jobs.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-4">
+              <FiClock className="text-2xl opacity-50" />
             </div>
+            <h3 className="text-lg font-medium text-gray-900">No jobs assigned</h3>
+            <p className="text-gray-500 text-sm mt-1">You will be notified when a new job is available.</p>
           </div>
-        ))}
+        )}
       </div>
-
-      {!loading && jobs.length === 0 && (
-        <p className="text-center text-gray-500">No jobs assigned yet</p>
-      )}
     </div>
   );
 }
-
-
-// import Button from "../components/Button";
-// import { useState, useMemo, useRef, useEffect } from "react";
-// import { FiPhone, FiDollarSign, FiClock } from "react-icons/fi";
-// import AppHeader from "../components/AppHeader";
-// import { getOperatorDashboard } from "../api/operatorApi";
-// import { operatorAction } from "../api/bookingApi";
-
-
-// function StatusBadge({ status }) {
-//   const map = {
-//     pending: "bg-yellow-100 text-yellow-800",
-//     assigned: "bg-blue-100 text-blue-800",
-//     in_progress: "bg-green-100 text-green-800",
-//     completed: "bg-gray-100 text-gray-700",
-//     rejected: "bg-red-100 text-red-700",
-//   };
-//   return (
-//     <span className={`px-2 py-1 rounded text-xs font-medium ${map[status]}`}>
-//       {status.replace(/_/g, " ")}
-//     </span>
-//   );
-// }
-
-// function PaymentBadge({ status }) {
-//   return (
-//     <span
-//       className={`px-2 py-1 rounded text-xs font-semibold ${
-//         status === "paid"
-//           ? "bg-green-100 text-green-700"
-//           : "bg-orange-100 text-orange-700"
-//       }`}
-//     >
-//       {status === "paid" ? "Paid" : "Pending"}
-//     </span>
-//   );
-// }
-
-// export default function OperatorDashboard() {
-//   const [jobs, setJobs] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const fetchedRef = useRef(false); // prevent double API hit (React 18)
-
-//   useEffect(() => {
-//     if (fetchedRef.current) return;
-//     fetchedRef.current = true;
-
-//     getOperatorDashboard()
-//       .then(res => {
-//         if (res.data.statusCode === 200) {
-//           console.log("Fetched jobs:", res.data.data);
-//           setJobs(res.data.data);
-//         }
-//       })
-//       .catch(() => {
-//         alert("Unauthorized or error loading operator dashboard");
-//       })
-//       .finally(() => setLoading(false));
-//   }, []);
-
-//   const totalEarnings = useMemo(
-//     () =>
-//       jobs
-//         .filter(j => j.paymentStatus === "paid")
-//         .reduce((s, j) => s + j.price, 0),
-//     [jobs]
-//   );
-
-//   const pendingAmount = useMemo(
-//     () =>
-//       jobs
-//         .filter(j => j.paymentStatus === "pending" && j.status === "completed")
-//         .reduce((s, j) => s + j.price, 0),
-//     [jobs]
-//   );
-
-//   const handleAction = async (jobs, action) => {
-//     debugger;
-//   try {
-//     const res = await operatorAction(jobs.bookingId, action);
-
-//     if (res.data.statusCode === 200) {
-//       // Update UI locally (no re-fetch needed)
-//       setJobs(prev =>
-//         prev.map(j =>
-//           j.bookingRef === jobs.bookingRef
-//             ? { ...j, status: action === "accept" ? "assigned" : "rejected" }
-//             : j
-//         )
-//       );
-//     } else {
-//       alert(res.data.statusMessage);
-//     }
-//   } catch {
-//     alert("Action failed");
-//   }
-// };
-
-//   return (
-//     <div className="p-4 max-w-3xl mx-auto space-y-4">
-//       <AppHeader title="Operator Dashboard" />
-
-//       {/* EARNINGS SUMMARY */}
-//       <div className="grid grid-cols-2 gap-3">
-//         <div className="bg-green-50 border rounded-lg p-4">
-//           <div className="flex items-center gap-2 text-green-700">
-//             <FiDollarSign />
-//             <span className="text-sm">Total Earned</span>
-//           </div>
-//           <div className="text-2xl font-bold">₹{totalEarnings}</div>
-//         </div>
-
-//         <div className="bg-orange-50 border rounded-lg p-4">
-//           <div className="flex items-center gap-2 text-orange-700">
-//             <FiClock />
-//             <span className="text-sm">Pending</span>
-//           </div>
-//           <div className="text-2xl font-bold">₹{pendingAmount}</div>
-//         </div>
-//       </div>
-//       {loading && (
-//         <p className="text-center text-gray-500">Loading jobs...</p>
-//       )}
-
-//       <div className="space-y-4">
-//         {jobs.map(job => (
-//           <div key={job.bookingRef} className="bg-white border rounded-lg p-4 shadow-sm">
-//             <div className="flex justify-between items-start">
-//               <div>
-//                 <div className="flex items-center gap-2">
-//                   <h2 className="font-semibold">{job.bookingRef}</h2>
-//                   <StatusBadge status={job.status} />
-//                   {job.status === "completed" && (
-//                     <PaymentBadge status={job.paymentStatus} />
-//                   )}
-//                 </div>
-
-//                 <div className="text-sm text-gray-600 mt-1">
-//                   Farmer: {job.farmerName} • {job.area}
-//                 </div>
-//                 <div className="text-sm text-gray-600">
-//                   Location: {job.location}
-//                 </div>
-//               </div>
-
-//               <div className="text-right">
-//                 <a
-//                   href={`tel:${job.farmerPhone}`}
-//                   className="text-green-600 text-sm flex items-center gap-1"
-//                 >
-//                   <FiPhone /> Call
-//                 </a>
-//                 <div className="font-semibold mt-1">₹{job.amount}</div>
-//               </div>
-//             </div>
-
-//             {/* STATUS INFO */}
-//             {job.status === "completed" && job.endTime && (
-//               <div className="mt-2 text-sm text-gray-600">
-//                 Completed on {new Date(job.endTime).toLocaleString()}
-//               </div>
-//             )}
-//           </div>
-//         ))}
-
-//         {/* ACTION BUTTONS */}
-//         <div className="mt-3 flex gap-2">
-//           {jobs.status === "pending" && (
-//             <>
-//               <Button
-//                 label="Accept"
-//                 onClick={() => handleAction(job, "accept")}
-//               />
-//               <Button
-//                 label="Reject"
-//                 type="secondary"
-//                 onClick={() => handleAction(jobs, "reject")}
-//               />
-//             </>
-//           )}
-
-//           {jobs.status === "assigned" && (
-//             <Button
-//               label="Reject"
-//               type="secondary"
-//               onClick={() => handleAction(jobs, "reject")}
-//             />
-//           )}
-//         </div>
-//       </div>
-
-//       {!loading && jobs.length === 0 && (
-//         <p className="text-center text-gray-500">
-//           No jobs assigned yet
-//         </p>
-//       )}
-//     </div>
-//   );
-// }
 

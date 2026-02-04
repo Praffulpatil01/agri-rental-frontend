@@ -199,7 +199,7 @@ export default function FarmerDashboard() {
                 </div>
 
                 <div className="space-y-3 mb-5">
-                  <div className="flex items-center justify-between text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  {/* <div className="flex items-center justify-between text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
                     <div className="flex items-center gap-2 text-gray-600">
                       <FaCalendarAlt className="text-gray-400" />
                       <span>Next Available:</span>
@@ -207,7 +207,7 @@ export default function FarmerDashboard() {
                     <span className="font-semibold text-gray-800">
                       {formatTime(eq.nextAvailable)}
                     </span>
-                  </div>
+                  </div> */}
 
                   <div className="flex items-center gap-3 pl-1">
                     <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">

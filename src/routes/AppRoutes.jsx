@@ -6,10 +6,12 @@ import Signin from "../pages/Signin";
 import FarmerDashboard from "../pages/FarmerDashboard";
 import OperatorDashboard from "../pages/OperatorDashboard";
 import CreateBooking from "../pages/CreateBooking";
-import JobTracking from "../pages/JobTracking";
 import FarmerBookings from "../pages/FarmerBookings";
 import FarmerPaymentConfirm from "../pages/FarmerPaymentConfirm";
 import AdminDashboard from "../pages/AdminDashboard";
+import OperatorMachines from "../pages/OperatorMachines";
+import AddMachine from "../pages/AddMachine";
+import EditMachine from "../pages/EditMachine";
 
 export default function AppRoutes() {
   return (
@@ -49,10 +51,26 @@ export default function AppRoutes() {
       />
 
       <Route
-        path="/job"
+        path="/operator/machines"
         element={
           <ProtectedRoute roles={["Operator"]}>
-            <JobTracking />
+            <OperatorMachines />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/machines/add"
+        element={
+          <ProtectedRoute roles={["Operator"]}>
+            <AddMachine />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/operator/machines/edit/:id"
+        element={
+          <ProtectedRoute roles={["Operator"]}>
+            <EditMachine />
           </ProtectedRoute>
         }
       />

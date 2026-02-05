@@ -42,6 +42,7 @@ function PaymentBadge({ status }) {
 
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../context/ToastContext";
+import { useTranslation } from "react-i18next";
 
 export default function OperatorDashboard() {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ export default function OperatorDashboard() {
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
   const toast = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (fetchedRef.current) return;
@@ -164,12 +166,12 @@ export default function OperatorDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-3xl mx-auto p-4 space-y-6">
-        <AppHeader title="Operator Dashboard" />
+        <AppHeader title={t('dashboard')} />
 
         {/* TOP ACTIONS */}
         <div className="flex justify-end">
           <Button
-            label="Manage Machines"
+            label={t('manage_machines')}
             type="secondary"
             size="sm"
             onClick={() => navigate('/operator/machines')}
@@ -181,7 +183,7 @@ export default function OperatorDashboard() {
           <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-5 text-white shadow-lg shadow-green-200">
             <div className="flex items-center gap-2 text-green-100 mb-1">
               <FaRupeeSign className="opacity-80" />
-              <span className="text-xs font-semibold uppercase tracking-wider">Earned</span>
+              <span className="text-xs font-semibold uppercase tracking-wider">{t('operator.earned')}</span>
             </div>
             <div className="text-3xl font-bold">₹{totalEarnings}</div>
           </div>
@@ -189,7 +191,7 @@ export default function OperatorDashboard() {
           <div className="bg-white border boundary-gray-100 rounded-2xl p-5 shadow-sm">
             <div className="flex items-center gap-2 text-orange-600 mb-1">
               <FiClock />
-              <span className="text-xs font-semibold uppercase tracking-wider opacity-80">Pending</span>
+              <span className="text-xs font-semibold uppercase tracking-wider opacity-80">{t('operator.pending')}</span>
             </div>
             <div className="text-3xl font-bold text-gray-900">₹{pendingAmount}</div>
           </div>
@@ -234,7 +236,7 @@ export default function OperatorDashboard() {
                   <p className="text-sm text-gray-600">{job.location}</p>
                 </div>
                 <div className="flex items-center gap-3 pt-2 border-t border-gray-200 mt-2">
-                  <div className="text-sm text-gray-500">Job Value:</div>
+                  <div className="text-sm text-gray-500">{t('operator.job_value')}:</div>
                   <div className="font-bold text-gray-900 flex items-center">
                     <FaRupeeSign className="text-xs mr-0.5" />
                     {job.amount}
@@ -248,7 +250,7 @@ export default function OperatorDashboard() {
                   <>
                     <div className="flex-1">
                       <Button
-                        label="Accept Job"
+                        label={t('operator.accept_job')}
                         onClick={() => handleAction(job, "accept")}
                         fullWidth
                       />
@@ -256,7 +258,7 @@ export default function OperatorDashboard() {
 
                     <div className="flex-1">
                       <Button
-                        label="Reject"
+                        label={t('operator.reject_job')}
                         type="secondary" // Assuming Button component has a secondary or danger type, defaulting to safe
                         onClick={() => handleAction(job, "reject")}
                         fullWidth
@@ -269,7 +271,7 @@ export default function OperatorDashboard() {
                 {job.status === "assigned" && (
                   <div className="w-full">
                     <Button
-                      label="Start Job"
+                      label={t('operator.start_job')}
                       onClick={() => handleStartJob(job)}
                       fullWidth
                     />
@@ -279,7 +281,7 @@ export default function OperatorDashboard() {
                 {job.status === "in_progress" && (
                   <div className="w-full">
                     <Button
-                      label="Finish Job"
+                      label={t('operator.finish_job')}
                       onClick={() => handleFinishJob(job)}
                       fullWidth
                       className="!bg-amber-500 hover:!bg-amber-600 !text-white"
@@ -296,8 +298,8 @@ export default function OperatorDashboard() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-4">
               <FiClock className="text-2xl opacity-50" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900">No jobs assigned</h3>
-            <p className="text-gray-500 text-sm mt-1">You will be notified when a new job is available.</p>
+            <h3 className="text-lg font-medium text-gray-900">{t('operator.no_jobs')}</h3>
+            <p className="text-gray-500 text-sm mt-1">{t('operator.job_notify')}</p>
           </div>
         )}
       </div>

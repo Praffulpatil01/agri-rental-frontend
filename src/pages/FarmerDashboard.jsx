@@ -34,9 +34,12 @@ function formatTime(iso) {
 
 import { useToast } from "../context/ToastContext";
 
+import { useTranslation } from "react-i18next";
+
 export default function FarmerDashboard() {
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation();
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
@@ -105,7 +108,7 @@ export default function FarmerDashboard() {
   return (
     <div className="min-h-screen bg-gray-50/50 pb-20">
       <div className="max-w-4xl mx-auto p-4 space-y-6">
-        <AppHeader title="Farmer Dashboard" />
+        <AppHeader title={t('dashboard')} />
 
         {/* CONTROLS SECTION */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 space-y-4">
@@ -119,7 +122,7 @@ export default function FarmerDashboard() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tractors, tools..."
+                placeholder={t('farmer.search_placeholder')}
                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition duration-150 ease-in-out sm:text-sm"
               />
             </div>
@@ -127,7 +130,7 @@ export default function FarmerDashboard() {
             {/* MY BOOKINGS BUTTON */}
             <div className="w-full md:w-auto">
               <Button
-                label="My Bookings"
+                label={t('my_bookings')}
                 onClick={() => navigate("/farmer/bookings")}
                 type="secondary"
                 className="!py-2.5"
@@ -139,7 +142,7 @@ export default function FarmerDashboard() {
           {/* FILTERS */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mr-1 flex items-center gap-1">
-              <FiFilter /> Filter:
+              <FiFilter /> {t('farmer.filter')}:
             </span>
             {["all", "available", "busy"].map(f => (
               <button
@@ -153,7 +156,7 @@ export default function FarmerDashboard() {
                   }
                 `}
               >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
+                {t(`farmer.${f}`) || f}
               </button>
             ))}
           </div>
@@ -225,7 +228,7 @@ export default function FarmerDashboard() {
 
               <div className="mt-auto pt-4 border-t border-gray-100">
                 <Button
-                  label="Book Now"
+                  label={t('book_now')}
                   onClick={() => handleBook(eq)}
                   type={eq.status === 'Available' ? 'primary' : 'secondary'}
                   disabled={eq.status !== 'Available'}
@@ -241,13 +244,13 @@ export default function FarmerDashboard() {
             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 mb-4">
               <FaTractor className="w-8 h-8 opacity-50" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900">No equipment found</h3>
-            <p className="text-gray-500 text-sm mt-1">Try adjusting your search or filters</p>
+            <h3 className="text-lg font-medium text-gray-900">{t('farmer.no_equipment')}</h3>
+            <p className="text-gray-500 text-sm mt-1">{t('farmer.adjust_filters')}</p>
             <button
               onClick={() => { setQuery(""); setFilter("all"); }}
               className="mt-4 text-green-600 text-sm font-medium hover:underline"
             >
-              Clear all filters
+              {t('farmer.clear_filters')}
             </button>
           </div>
         )}

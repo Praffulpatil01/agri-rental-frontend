@@ -6,6 +6,7 @@ import { getMachines, deleteMachine, toggleMachineStatus } from "../api/machineA
 import { useToast } from "../context/ToastContext";
 import { FiPlus, FiEdit2, FiTrash2, FiPower } from "react-icons/fi";
 import { FaTractor, FaRupeeSign } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 export default function OperatorMachines() {
     const [machines, setMachines] = useState([]);
@@ -13,6 +14,7 @@ export default function OperatorMachines() {
     const fetchedRef = useRef(false);
     const toast = useToast();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (fetchedRef.current) return;
@@ -34,11 +36,11 @@ export default function OperatorMachines() {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this machine?")) return;
+        if (!window.confirm(t('machines.confirm_delete'))) return;
         try {
             const res = await deleteMachine(id);
             if (res.statusCode === 200) {
-                toast.success("Machine deleted successfully");
+                toast.success(t('machines.deleted'));
                 setMachines(prev => prev.filter(m => m.id !== id));
             } else {
                 toast.error(res.statusMessage || "Delete failed");
@@ -49,7 +51,7 @@ export default function OperatorMachines() {
     };
 
     const handleToggleStatus = async (machine) => {
-        debugger;
+        // debugger;
         // const newStatus = Convert.ToBoolean(machine.status) === true ? "Offline" : "Available";
         const newStatus = Boolean(machine.isAvailable) ? "Offline" : "Available";
         try {
@@ -66,12 +68,12 @@ export default function OperatorMachines() {
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <div className="max-w-3xl mx-auto p-4 space-y-6">
-                <AppHeader title="My Machines" />
+                <AppHeader title={t('machines.title')} />
 
                 {/* Top Action */}
                 <div className="flex justify-end">
                     <Link to="/operator/machines/add">
-                        <Button label="Add New Machine" icon={FiPlus} />
+                        <Button label={t('machines.add_new')} icon={FiPlus} />
                     </Link>
                 </div>
 
@@ -96,7 +98,7 @@ export default function OperatorMachines() {
                                         {machine.rate} / {machine.rateUnit}
                                     </div>
                                     <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${machine.isAvailable === true ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                                        {machine.isAvailable}
+                                        {machine.isAvailable === true ? t('status.available') : t('status.offline')}
                                     </span>
                                 </div>
                             </div>
@@ -106,7 +108,7 @@ export default function OperatorMachines() {
                                     onClick={() => handleToggleStatus(machine)}
                                     className={`flex-1 sm:flex-none py-2 px-3 rounded-lg text-sm font-medium border transition-colors flex items-center justify-center gap-1 ${machine.isAvailable === true ? 'text-orange-600 border-orange-100 hover:bg-orange-50' : 'text-green-600 border-green-100 hover:bg-green-50'}`}
                                 >
-                                    <FiPower /> {machine.isAvailable === true ? 'Disable' : 'Enable'}
+                                    <FiPower /> {machine.isAvailable === true ? t('machines.disable') : t('machines.enable')}
                                 </button>
                                 {/* <Link
                                     to={`/operator/machines/edit/${machine.id}`}
@@ -127,9 +129,9 @@ export default function OperatorMachines() {
 
                     {!loading && machines.length === 0 && (
                         <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300">
-                            <p className="text-gray-500 mb-4">You haven't added any machines yet.</p>
+                            <p className="text-gray-500 mb-4">{t('machines.no_machines')}</p>
                             <Link to="/operator/machines/add">
-                                <Button label="Add Your First Machine" type="secondary" />
+                                <Button label={t('machines.add_first')} type="secondary" />
                             </Link>
                         </div>
                     )}

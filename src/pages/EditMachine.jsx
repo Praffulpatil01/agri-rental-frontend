@@ -6,11 +6,13 @@ import Input from "../components/Input";
 import { useToast } from "../context/ToastContext";
 // import { getMachineById, updateMachine } from "../api/machineApi";
 import { FaTractor } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 export default function EditMachine() {
     const { id } = useParams();
     const navigate = useNavigate();
     const toast = useToast();
+    const { t } = useTranslation();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const fetchedRef = useRef(false);
@@ -48,14 +50,14 @@ export default function EditMachine() {
 
     // const handleSubmit = async () => {
     //     if (!form.MachineType || !form.Rate) {
-    //         toast.error("Please fill required fields");
+    //         toast.error(t('machines.fill_required'));
     //         return;
     //     }
     //     setSaving(true);
     //     try {
     //         const res = await updateMachine(id, form);
     //         if (res.statusCode === 200) {
-    //             toast.success("Machine updated successfully");
+    //             toast.success(t('machines.updated_success'));
     //             navigate("/operator/machines");
     //         } else {
     //             toast.error(res.statusMessage || "Update failed");
@@ -72,7 +74,7 @@ export default function EditMachine() {
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <div className="max-w-xl mx-auto p-4 space-y-6">
-                <AppHeader title="Edit Machine" />
+                <AppHeader title={t('machines.edit_title')} />
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
                     <div className="flex justify-center mb-4">
@@ -82,7 +84,7 @@ export default function EditMachine() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Machine Type</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('machines.type')}</label>
                         <div className="grid grid-cols-2 gap-2">
                             {machineTypes.map(MachineType => (
                                 <button
@@ -98,7 +100,7 @@ export default function EditMachine() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Rate (₹)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('machines.rate')}</label>
                         <Input
                             type="number"
                             placeholder="e.g. 1200"
@@ -109,7 +111,7 @@ export default function EditMachine() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Rate Unit</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('machines.rate_unit')}</label>
                         <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-200">
                             {rateUnits.map(RateUnit => (
                                 <button
@@ -125,7 +127,7 @@ export default function EditMachine() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('machines.status_label')}</label>
                         <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-200">
                             {["Available", "Offline"].map(st => (
                                 <button
@@ -136,7 +138,7 @@ export default function EditMachine() {
                                         : 'text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
-                                    {st}
+                                    {st === 'Available' ? t('status.available') : t('status.offline')}
                                 </button>
                             ))}
                         </div>
@@ -147,12 +149,12 @@ export default function EditMachine() {
                             onClick={() => navigate(-1)}
                             className="flex-1 py-3 text-sm font-medium text-gray-600 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
                         >
-                            Cancel
+                            {t('machines.cancel')}
                         </button>
                         <div className="flex-1">
                             <Button
-                                label={saving ? "Updating..." : "Update Machine"}
-                                onClick={handleSubmit}
+                                label={saving ? t('machines.updating') : t('machines.update')}
+                                // onClick={handleSubmit}
                                 disabled={saving}
                                 fullWidth
                             />

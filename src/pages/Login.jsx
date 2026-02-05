@@ -7,6 +7,8 @@ import { FiPhone } from "react-icons/fi";
 import { FaTractor } from "react-icons/fa";
 import { login as loginApi } from "../api/authApi";
 import { useToast } from "../context/ToastContext";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function Login() {
   const [phone, setPhone] = useState("");
@@ -14,6 +16,7 @@ export default function Login() {
   const { loginUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const toast = useToast();
+  const { t } = useTranslation();
 
   const handleLogin = async () => {
     if (!phone) return;
@@ -22,7 +25,7 @@ export default function Login() {
     try {
       const res = await loginApi({ phoneNumber: phone });
       loginUser(res.data);
-      toast.success("Login successful!");
+      toast.success(t('welcome') + "!");
       if (res.data.role === "Farmer") {
         navigate("/farmer");
       } else if (res.data.role === "Operator") {
@@ -46,12 +49,12 @@ export default function Login() {
         </div>
 
         <div className="z-10 max-w-lg">
-          <h1 className="text-5xl font-bold mb-6 leading-tight">Empowering Agriculture with Technology</h1>
-          <p className="text-green-100 text-lg">Connect with equipment owners, manage bookings, and grow your farming business efficiently.</p>
+          <h1 className="text-5xl font-bold mb-6 leading-tight">{t('app_name')}</h1>
+          <p className="text-green-100 text-lg">Empowering Agriculture with Technology</p>
         </div>
 
         <div className="z-10 text-sm opacity-70">
-          © 2024 Agri Rental Services
+          © 2026 Agri Rental Services
         </div>
 
         {/* Decorative Circles */}
@@ -64,10 +67,13 @@ export default function Login() {
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
 
           <div className="mb-8 text-center lg:text-left">
-            <div className="inline-flex lg:hidden w-12 h-12 bg-green-100 rounded-xl items-center justify-center text-green-600 mb-4">
-              <FaTractor className="text-xl" />
+            <div className="flex justify-between items-center mb-4">
+              <div className="inline-flex lg:hidden w-12 h-12 bg-green-100 rounded-xl items-center justify-center text-green-600">
+                <FaTractor className="text-xl" />
+              </div>
+              <LanguageSwitcher />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
+            <h2 className="text-2xl font-bold text-gray-900">{t('welcome')} Back</h2>
             <p className="text-gray-500 mt-2">Please login to your account</p>
           </div>
 
@@ -86,7 +92,7 @@ export default function Login() {
             </div>
 
             <Button
-              label={loading ? "Logging in..." : "Continue"}
+              label={loading ? "Logging in..." : t('login')}
               onClick={handleLogin}
               disabled={!phone || loading}
               type="primary"
@@ -108,7 +114,7 @@ export default function Login() {
               className="flex items-center justify-center w-full px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors gap-2"
             >
               <FiPhone className="w-4 h-4 text-green-600" />
-              <span>Sign Up / Create Account</span>
+              <span>{t('signup')}</span>
             </Link>
           </div>
 

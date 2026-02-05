@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FiLogOut } from "react-icons/fi";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 export default function AppHeader({ title }) {
   const { logout, user } = useAuth();
@@ -15,17 +16,20 @@ export default function AppHeader({ title }) {
         )}
       </div>
 
-      <button
-        onClick={() => {
-          logout();
-          navigate("/");
-        }}
-        className="p-2.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-        title="Logout"
-        aria-label="Logout"
-      >
-        <FiLogOut className="text-lg" />
-      </button>
+      <div className="flex items-center gap-3">
+        <LanguageSwitcher />
+        <button
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
+          className="p-2.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+          title="Logout"
+          aria-label="Logout"
+        >
+          <FiLogOut className="text-lg" />
+        </button>
+      </div>
     </div>
   );
 }

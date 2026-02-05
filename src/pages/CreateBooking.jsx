@@ -7,11 +7,13 @@ import { FaCalendarAlt, FaMapMarkedAlt, FaRupeeSign, FaTractor } from "react-ico
 import { FiClock } from "react-icons/fi";
 
 import { useToast } from "../context/ToastContext";
+import { useTranslation } from "react-i18next";
 
 export default function CreateBooking() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation();
 
   const [area, setArea] = useState("");
   const [scheduledAt, setScheduledAt] = useState("");
@@ -53,7 +55,7 @@ export default function CreateBooking() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-xl mx-auto p-4">
-        <AppHeader title="Confirm Booking" />
+        <AppHeader title={t('booking.confirm_title')} />
 
         <div className="mt-6 space-y-6">
 
@@ -77,11 +79,11 @@ export default function CreateBooking() {
 
           {/* FORM */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
-            <h4 className="font-semibold text-gray-800 border-b pb-2">Booking Details</h4>
+            <h4 className="font-semibold text-gray-800 border-b pb-2">{t('booking.details')}</h4>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date & Time
+                {t('booking.start_date')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -98,7 +100,7 @@ export default function CreateBooking() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Area / Scope
+                {t('booking.area_scope')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
@@ -117,12 +119,12 @@ export default function CreateBooking() {
           {/* COST ESTIMATION INFO */}
           <div className="bg-blue-50 rounded-xl p-4 flex gap-3 items-start text-blue-800 text-sm">
             <FiClock className="mt-0.5 shrink-0" />
-            <p>Total cost will be calculated based on actual hours used after the job is completed by the operator.</p>
+            <p>{t('booking.cost_info')}</p>
           </div>
 
           <div className="pt-4">
             <Button
-              label={submitting ? "Confirming..." : "Confirm Booking"}
+              label={submitting ? t('booking.confirming') : t('booking.confirm_btn')}
               onClick={handleSubmit}
               disabled={submitting}
               fullWidth
@@ -131,7 +133,7 @@ export default function CreateBooking() {
               onClick={() => navigate(-1)}
               className="w-full text-center py-3 text-gray-500 text-sm font-medium hover:text-gray-800 mt-2"
             >
-              Cancel
+              {t('booking.cancel')}
             </button>
           </div>
 

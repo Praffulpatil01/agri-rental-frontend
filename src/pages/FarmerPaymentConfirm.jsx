@@ -6,22 +6,24 @@ import { confirmPayment } from "../api/paymentApi";
 import { FaRupeeSign, FaShieldAlt, FaMoneyBillWave, FaMobileAlt, FaCreditCard, FaCheckCircle } from "react-icons/fa";
 
 import { useToast } from "../context/ToastContext";
+import { useTranslation } from "react-i18next";
 
 export default function FarmerPaymentConfirm() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const toast = useToast();
+  const { t } = useTranslation();
 
   // Handle missing state gracefully
   if (!state) {
     return (
       <div className="p-4 flex flex-col items-center justify-center min-h-screen">
-        <p>No payment information found.</p>
+        <p>{t('payment.no_info')}</p>
         <button
           onClick={() => navigate('/farmer/bookings')}
           className="mt-4 text-green-600 underline"
         >
-          Go Back
+          {t('payment.go_back')}
         </button>
       </div>
     )
@@ -38,13 +40,13 @@ export default function FarmerPaymentConfirm() {
       const res = await confirmPayment({ bookingRef: bookingRef, paymentMode: paymentMode });
 
       if (res.data.statusCode === 200) {
-        toast.success("Payment confirmed successfully!");
+        toast.success(t('payment.success'));
         navigate("/farmer");
       } else {
         toast.error(res.data.statusMessage);
       }
     } catch {
-      toast.error("Payment failed. Please try again.");
+      toast.error(t('payment.failed'));
     } finally {
       setLoading(false);
     }
@@ -74,17 +76,17 @@ export default function FarmerPaymentConfirm() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-md mx-auto p-4 space-y-6">
-        <AppHeader title="Confirm Payment" />
+        <AppHeader title={t('payment.title')} />
 
         <div className="bg-green-600 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
           <div className="relative z-10 text-center">
-            <p className="text-green-100 text-sm font-medium mb-1">Total Amount Due</p>
+            <p className="text-green-100 text-sm font-medium mb-1">{t('payment.amount_due')}</p>
             <h1 className="text-4xl font-bold flex items-center justify-center">
               <FaRupeeSign className="text-2xl mr-1" />
               {amount}
             </h1>
             <div className="mt-4 pt-4 border-t border-green-500/50 flex justify-between text-sm">
-              <span className="opacity-80">Booking Ref</span>
+              <span className="opacity-80">{t('payment.booking_ref')}</span>
               <span className="font-mono font-medium">{bookingRef}</span>
             </div>
           </div>
@@ -95,22 +97,22 @@ export default function FarmerPaymentConfirm() {
 
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-6">
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Select Payment Method</h3>
+            <h3 className="font-semibold text-gray-900 mb-4">{t('payment.select_method')}</h3>
             <div className="space-y-3">
-              <PaymentOption mode="Cash" icon={FaMoneyBillWave} label="Cash Payment" />
-              <PaymentOption mode="UPI" icon={FaMobileAlt} label="UPI / GPay / PhonePe" />
-              <PaymentOption mode="Online" icon={FaCreditCard} label="Credit / Debit Card" />
+              <PaymentOption mode="Cash" icon={FaMoneyBillWave} label={t('payment.methods.cash')} />
+              <PaymentOption mode="UPI" icon={FaMobileAlt} label={t('payment.methods.upi')} />
+              <PaymentOption mode="Online" icon={FaCreditCard} label={t('payment.methods.online')} />
             </div>
           </div>
 
           <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
             <FaShieldAlt className="text-green-600" />
-            Payments are secure and encrypted
+            {t('payment.secure_msg')}
           </div>
 
           <div>
             <Button
-              label={loading ? "Processing..." : `Pay ₹${amount}`}
+              label={loading ? t('payment.processing') : `${t('payment.pay_btn')} ₹${amount}`}
               onClick={handleConfirm}
               disabled={loading}
               fullWidth
@@ -119,7 +121,7 @@ export default function FarmerPaymentConfirm() {
               onClick={() => navigate(-1)}
               className="w-full text-center py-3 text-gray-500 text-sm font-medium hover:text-gray-800 mt-2"
             >
-              Cancel
+              {t('payment.cancel')}
             </button>
           </div>
         </div>

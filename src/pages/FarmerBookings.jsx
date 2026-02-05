@@ -40,6 +40,7 @@ function PaymentBadge({ status }) {
 }
 
 import { useToast } from "../context/ToastContext";
+import { useTranslation } from "react-i18next";
 
 export default function FarmerBookings() {
   const [bookings, setBookings] = useState([]);
@@ -47,6 +48,12 @@ export default function FarmerBookings() {
   const fetchedRef = useRef(false);
   const navigate = useNavigate();
   const toast = useToast();
+
+  const { t } = useTranslation();
+
+  const getStatusLabel = (status) => {
+    return t(`bookings.status.${status}`, status.replace(/_/g, " "));
+  };
 
   useEffect(() => {
     if (fetchedRef.current) return;
@@ -65,7 +72,7 @@ export default function FarmerBookings() {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-3xl mx-auto p-4 space-y-6">
-        <AppHeader title="My Bookings" />
+        <AppHeader title={t('bookings.title')} />
 
         {loading && (
           <div className="flex justify-center py-12">
@@ -89,19 +96,28 @@ export default function FarmerBookings() {
                     </div>
                   </div>
                 </div>
-                <StatusBadge status={b.status} />
+                {/* Custom Status Badge using translation */}
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border 
+                  ${b.status === 'pending' ? "bg-yellow-50 text-yellow-700 border-yellow-200" :
+                    b.status === 'assigned' ? "bg-blue-50 text-blue-700 border-blue-200" :
+                      b.status === 'in_progress' ? "bg-green-50 text-green-700 border-green-200" :
+                        b.status === 'completed' ? "bg-gray-50 text-gray-700 border-gray-200" :
+                          "bg-red-50 text-red-700 border-red-200"}`}>
+                  <span className="mr-1">{b.status === 'completed' ? '✓' : '•'}</span>
+                  {getStatusLabel(b.status)}
+                </span>
               </div>
 
               <div className="bg-gray-50 rounded-xl p-4 mb-4 grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-gray-400 font-medium uppercase mb-1">Operator</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase mb-1">{t('bookings.operator')}</p>
                   <div className="flex items-center gap-2 font-medium text-gray-800">
                     <FaUser className="text-gray-400 text-sm" />
                     {b.operatorName}
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400 font-medium uppercase mb-1">Total Amount</p>
+                  <p className="text-xs text-gray-400 font-medium uppercase mb-1">{t('bookings.total_amount')}</p>
                   <div className="flex items-center gap-1 font-bold text-gray-900 text-lg">
                     <FaRupeeSign className="text-sm text-gray-400" />
                     {b.amount}
@@ -112,14 +128,17 @@ export default function FarmerBookings() {
               <div className="flex items-center justify-between">
                 <div className="flex gap-2">
                   {b.status === "completed" && (
-                    <PaymentBadge status={b.paymentStatus} />
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider 
+                        ${b.paymentStatus === "paid" ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}`}>
+                      {b.paymentStatus === "paid" ? t('bookings.status.paid') : t('bookings.status.pay_pending')}
+                    </span>
                   )}
                 </div>
 
                 {b.status === "completed" && b.paymentStatus === "pending" && (
                   <div className="w-32">
                     <Button
-                      label="Pay Now"
+                      label={t('bookings.pay_now')}
                       size="sm"
                       onClick={() =>
                         navigate("/farmer/payment", {
@@ -144,8 +163,8 @@ export default function FarmerBookings() {
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-4">
               <FaRegCalendarAlt className="text-2xl opacity-50" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900">No bookings yet</h3>
-            <p className="text-gray-500 text-sm mt-1 max-w-xs">Your booking history will appear here once you make a reservation.</p>
+            <h3 className="text-lg font-medium text-gray-900">{t('bookings.no_bookings')}</h3>
+            <p className="text-gray-500 text-sm mt-1 max-w-xs">{t('bookings.no_bookings_desc')}</p>
           </div>
         )}
       </div>

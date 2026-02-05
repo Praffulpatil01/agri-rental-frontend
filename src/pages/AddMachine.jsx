@@ -6,11 +6,13 @@ import Input from "../components/Input";
 import { useToast } from "../context/ToastContext";
 import { addMachine } from "../api/machineApi";
 import { FaTractor } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 export default function AddMachine() {
     const navigate = useNavigate();
     const toast = useToast();
     const [loading, setLoading] = useState(false);
+    const { t } = useTranslation();
 
     const [form, setForm] = useState({
         MachineType: "",
@@ -24,14 +26,14 @@ export default function AddMachine() {
 
     const handleSubmit = async () => {
         if (!form.MachineType || !form.Rate) {
-            toast.error("Please fill required fields");
+            toast.error(t('machines.fill_required'));
             return;
         }
         setLoading(true);
         try {
             const res = await addMachine(form);
             if (res.statusCode === 201) {
-                toast.success("Machine added successfully");
+                toast.success(t('machines.added_success'));
                 navigate("/operator/machines");
             } else {
                 toast.error(res.statusMessage || "Failed to add machine");
@@ -46,7 +48,7 @@ export default function AddMachine() {
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <div className="max-w-xl mx-auto p-4 space-y-6">
-                <AppHeader title="Add Machine" />
+                <AppHeader title={t('machines.add_title')} />
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-5">
                     <div className="flex justify-center mb-4">
@@ -56,7 +58,7 @@ export default function AddMachine() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Machine Type</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('machines.type')}</label>
                         <div className="grid grid-cols-2 gap-2">
                             {machineTypes.map(MachineType => (
                                 <button
@@ -73,7 +75,7 @@ export default function AddMachine() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Rate (₹)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('machines.rate')}</label>
                         <Input
                             type="number"
                             placeholder="e.g. 1200"
@@ -84,7 +86,7 @@ export default function AddMachine() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">Rate Unit</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('machines.rate_unit')}</label>
                         <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-200">
                             {rateUnits.map(RateUnit => (
                                 <button
@@ -104,11 +106,11 @@ export default function AddMachine() {
                             onClick={() => navigate(-1)}
                             className="flex-1 py-3 text-sm font-medium text-gray-600 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
                         >
-                            Cancel
+                            {t('machines.cancel')}
                         </button>
                         <div className="flex-1">
                             <Button
-                                label={loading ? "Saving..." : "Save Machine"}
+                                label={loading ? t('machines.saving') : t('machines.save')}
                                 onClick={handleSubmit}
                                 disabled={loading}
                                 fullWidth

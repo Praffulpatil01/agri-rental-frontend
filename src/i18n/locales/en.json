@@ -4,6 +4,10 @@
     "signup": "Signup",
     "logout": "Logout",
     "welcome": "Welcome",
+    "welcome_back": "Welcome Back",
+    "login_subtitle": "Please login to your account",
+    "or": "Or",
+    "terms_privacy": "By logging in, you agree to our Terms of Service and Privacy Policy.",
     "dashboard": "Dashboard",
     "my_machines": "My Machines",
     "add_machine": "Add Machine",
@@ -44,7 +48,9 @@
         "all": "All",
         "no_equipment": "No equipment found",
         "adjust_filters": "Try adjusting your search or filters",
-        "clear_filters": "Clear all filters"
+        "clear_filters": "Clear all filters",
+        "available": "Available",
+        "busy": "Busy"
     },
     "operator": {
         "earned": "Earned",

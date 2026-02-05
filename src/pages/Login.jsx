@@ -73,18 +73,18 @@ export default function Login() {
               </div>
               <LanguageSwitcher />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">{t('welcome')} Back</h2>
-            <p className="text-gray-500 mt-2">Please login to your account</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('welcome_back')}</h2>
+            <p className="text-gray-500 mt-2">{t('login_subtitle')}</p>
           </div>
 
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Mobile Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('auth.phone_label')}</label>
               <Input
                 type="tel"
                 inputMode="numeric"
                 maxLength={10}
-                placeholder="Enter 10-digit number"
+                placeholder={t('auth.phone_placeholder')}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full"
@@ -92,7 +92,7 @@ export default function Login() {
             </div>
 
             <Button
-              label={loading ? "Logging in..." : t('login')}
+              label={loading ? t('auth.sending_code') : t('login')}
               onClick={handleLogin}
               disabled={!phone || loading}
               type="primary"
@@ -105,7 +105,7 @@ export default function Login() {
                 <div className="w-full border-t border-gray-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or</span>
+                <span className="px-2 bg-white text-gray-500">{t('or')}</span>
               </div>
             </div>
 
@@ -119,7 +119,7 @@ export default function Login() {
           </div>
 
           <p className="text-xs text-center text-gray-400 mt-8">
-            By logging in, you agree to our <span className="text-green-600 cursor-pointer hover:underline">Terms of Service</span> and <span className="text-green-600 cursor-pointer hover:underline">Privacy Policy</span>.
+            {t('terms_privacy')}
           </p>
         </div>
       </div>

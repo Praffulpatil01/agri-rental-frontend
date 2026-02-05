@@ -36,7 +36,46 @@ export default function Signin() {
       toast.success(t('auth.send_code') + " (1234)");
     }, 800);
   };
-  // ... verifyOtp and other functions ...
+  const verifyOtp = async () => {
+    if (!otp || otp.length < 4) {
+      toast.error("Please enter valid OTP");
+      return;
+    }
+    if (!fullName.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    if (!role) {
+      toast.error("Please select a role");
+      return;
+    }
+
+    setVerifying(true);
+    try {
+      await signup({
+        name: fullName,
+        phoneNumber: phone,
+        role: role
+      });
+      toast.success("Account created successfully!");
+      navigate("/");
+    } catch (err) {
+      toast.error("Signup failed. Please try again.");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const resendOtp = () => {
+    toast.success(t('auth.send_code') + " (1234)");
+  };
+
+  const roleCardClass = (r) => {
+    return `cursor-pointer flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${role === r
+        ? "border-green-500 bg-green-50 text-green-700 shadow-sm"
+        : "border-gray-200 bg-white text-gray-500 hover:border-green-200 hover:bg-gray-50"
+      }`;
+  };
 
   return (
     <div className="min-h-screen flex bg-white">
